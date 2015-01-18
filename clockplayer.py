@@ -44,4 +44,6 @@ while True:
     if song != mpc.currentsong():
         song = mpc.currentsong()
         lcd.setPosition(2,0)
-        lcd.writeString(unidecode((song.get('title') or "no song title").decode("utf8"))[:16])
+        out = unidecode((song.get('title') or "no song title").decode("utf8"))[:16]
+        lcd.writeString(out)
+        lcd.writeString(" "*(16-len(out)))
