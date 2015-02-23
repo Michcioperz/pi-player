@@ -112,6 +112,6 @@ while True:
         incr = incr + 1
         song = mpc.currentsong()
         out = make_song_text()
-        out = out.center(len(out)+30)
+        out = out.center(len(out)+32)
         for i in range(0, len(out)-15):
             baqueuestring(3+i, 2, 0, out[i:i+16], (incer,incr,))
