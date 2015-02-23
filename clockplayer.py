@@ -5,17 +5,56 @@ import datetime
 import atexit
 import RPi.GPIO as GPIO
 import mpd
+import math
 import re
 import subprocess
+import time
+import threading
+import Queue
+
 
 mpc = mpd.MPDClient()
 mpc.connect('127.0.0.1', 6600)
 song = None
+incr = 0
 
-def music_prev(data): subprocess.call(['mpc', 'prev'])
-def music_next(data): subprocess.call(['mpc', 'next'])
-def music_play(data): subprocess.call(['mpc', 'play'])
-def music_pause(data): subprocess.call(['mpc', 'pause'])
+writequeue = Queue.PriorityQueue()
+
+def incer(i):
+    global incr
+    return incr <= i
+
+def enqueuechar(priority, y, x, ch, condition=None):
+    global writequeue
+    writequeue.put((priority, y, x, ch, condition))
+
+def enqueuestring(priority, y, x, st, condition=None):
+    global writequeue
+    for i in range(0, len(st)):
+        enqueuechar(priority, y, x+i, st[i], condition)
+
+def baqueuestring(priority, y, x, st, condition=None):
+    global writequeue
+    for i in range(0, len(st))[::-1]:
+        enqueuechar(priority, y, x+i, st[i], condition)
+
+def notifie(text=""):
+    global writequeue, timmy
+    timmy = text.center(16)
+    baqueuestring(0, 1, 0, text.center(16))
+
+def music_prev(data): notifie("PREVIOUS TRACK"); subprocess.call(['mpc', 'prev'])
+def music_next(data): notifie("NEXT TRACK"); subprocess.call(['mpc', 'next'])
+def music_play(data): notifie("PLAYBACK START"); subprocess.call(['mpc', 'play'])
+def music_pause(data): notifie("PLAYBACK PAUSE"); subprocess.call(['mpc', 'pause'])
+
+def music_getstatus():
+    st = mpc.status()
+    if "state" in st:
+        if st['state'] == "pause": return "|"
+        if st['state'] == 'play': return ">"
+        if st['state'] == 'stop': return "X"
+    return "?"
 
 GPIO.setmode(GPIO.BOARD)
 pins = {16:music_prev, 12:music_pause, 22:music_play, 18:music_next}
@@ -29,21 +68,50 @@ atexit.register(lcd.clear)
 lcd.backLightOn()
 
 lcd.clear()
-timmy = "hh:mm:ss yymmdd"
-lcd.home()
-lcd.writeString(timmy)
+timetemplate = "%H:%M:%S %d.%m"
+timmy = "%s %s" % (timetemplate, music_getstatus())
+enqueuestring(0, 1, 0, timmy)
 song = None
-while True:
-    naotsugu = "%s %s" % (("%s" % datetime.datetime.now().time())[:8], re.sub('-', '', "%s" % datetime.date.today())[2:])
+
+def timecheck():
+    global timmy
+    naotsugu = "%s %s" % (datetime.datetime.now().strftime(timetemplate),music_getstatus())
     if timmy != naotsugu:
         for i in range(0, len(timmy)):
             if timmy[i] != naotsugu[i]:
-                lcd.setPosition(1,i)
-                lcd.writeChar(naotsugu[i])
+                enqueuechar(1, 1, i, naotsugu[i])
         timmy = naotsugu
+
+def make_song_text():
+    global song
+    return unidecode(("%s - %s - %s" % (mpc.currentsong().get('artist', "no artist"), mpc.currentsong().get('title',"no title"), mpc.currentsong().get('album',"no album"))).decode("utf8"))
+
+class Unqueuer(threading.Thread):
+    def run(self):
+        global writequeue
+        while True:
+            if not writequeue.empty():
+                o = writequeue.get()
+                if o[4] is not None:
+                    if o[4][0](o[4][1]):
+                        lcd.setPosition(o[1], o[2])
+                        lcd.writeChar(o[3])
+                    else:
+                        print 'old thing %s' % repr(o)
+                else:
+                    lcd.setPosition(o[1], o[2])
+                    lcd.writeChar(o[3])
+
+t = Unqueuer()
+t.daemon = True
+t.start()
+
+while True:
+    timecheck()
     if song != mpc.currentsong():
+        incr = incr + 1
         song = mpc.currentsong()
-        lcd.setPosition(2,0)
-        out = unidecode((song.get('title') or "no song title").decode("utf8"))[:16]
-        lcd.writeString(out)
-        lcd.writeString(" "*(16-len(out)))
+        out = make_song_text()
+        out = out.center(len(out)+30)
+        for i in range(0, len(out)-15):
+            baqueuestring(3+i, 2, 0, out[i:i+16], (incer,incr,))

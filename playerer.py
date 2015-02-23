@@ -9,6 +9,15 @@ import RPi.GPIO as GPIO
 import mpd
 import subprocess
 
+class FakeLCD:
+    def __init__(self): pass
+    def home(self): pass
+    def clear(self): pass
+    def writeString(self, a): pass
+    def writeChar(self, a): pass
+    def backLightOn(self): pass
+    def setPosition(self, a, b): pass
+
 mpc = mpd.MPDClient()
 mpc.connect('127.0.0.1', 6600)
 song = None
@@ -25,7 +34,11 @@ for pin in pins:
     GPIO.add_event_detect(pin, GPIO.RISING, pins[pin])
 atexit.register(GPIO.cleanup)
 
-lcd = i2c_lcd.i2c_lcd(0x27, 1, 2, 1, 0, 4, 5, 6, 7, 3)
+try:
+    lcd = i2c_lcd.i2c_lcd(0x27, 1, 2, 1, 0, 4, 5, 6, 7, 3)
+except:
+    print("lcd init went bad, faking lcd for now")
+    lcd = FakeLCD()
 atexit.register(lcd.clear)
 lcd.backLightOn()
 lcd.writeString("Loading...")
