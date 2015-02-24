@@ -36,6 +36,7 @@ def enqueuestring(priority, y, x, st, condition=None):
 def baqueuestring(priority, y, x, st, condition=None):
     global writequeue
     for i in range(0, len(st))[::-1]:
+        priority = priority + 0.01
         enqueuechar(priority, y, x+i, st[i], condition)
 
 def notifie(text=""):
@@ -101,6 +102,8 @@ class Unqueuer(threading.Thread):
                 else:
                     lcd.setPosition(o[1], o[2])
                     lcd.writeChar(o[3])
+            else:
+                time.sleep(0.4)
 
 t = Unqueuer()
 t.daemon = True
@@ -115,3 +118,4 @@ while True:
         out = out.center(len(out)+32)
         for i in range(0, len(out)-15):
             baqueuestring(3+i, 2, 0, out[i:i+16], (incer,incr,))
+    time.sleep(0.4)
