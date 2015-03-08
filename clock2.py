@@ -114,9 +114,9 @@ class Unqueuer(threading.Thread):
                             lcd.setPosition(o[1], o[2])
                             lcd.writeChar(o[3])
                         else:
-                            #print 'already there %s' % repr(o)
+                            pass #print 'already there %s' % repr(o)
                     else:
-                        #print 'old thing %s' % repr(o)
+                        pass #print 'old thing %s' % repr(o)
                 else:
                     self.scr[o[1]][o[2]] = o[3]
                     lcd.setPosition(o[1], o[2])
