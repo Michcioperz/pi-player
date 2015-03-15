@@ -12,10 +12,8 @@ import time
 import threading
 import Queue
 
-
-mpc = mpd.MPDClient()
-mpc.connect('127.0.0.1', 6600)
 song = None
+st = {}
 oldsong = None
 incr = 0
 
@@ -25,14 +23,14 @@ def incer(i):
     global incr
     return incr <= i
 
-def enqueuechar(priority, y, x, ch, condition=None, dontcheck=True):
+def enqueuechar(priority, y, x, ch, condition=None, dontcheck=True, callback=None):
     global writequeue
-    writequeue.put((priority, y, x, ch, condition, dontcheck))
+    writequeue.put((priority, y, x, ch, condition, dontcheck, callback))
 
-def enqueuestring(priority, y, x, st, condition=None, dontcheck=True):
+def enqueuestring(priority, y, x, st, condition=None, dontcheck=True, callback=None):
     global writequeue
     for i in range(0, len(st)):
-        enqueuechar(priority, y, x+i, st[i], condition, dontcheck=dontcheck)
+        enqueuechar(priority, y, x+i, st[i], condition, dontcheck, callback)
 
 def baqueuestring(priority, y, x, st, condition=None, dontcheck=True):
     global writequeue
@@ -52,7 +50,7 @@ def music_play(data): notifie(" "*9+"PLAY"); subprocess.call(['mpc', 'play'])
 def music_pause(data): notifie(" "*9+"PAUS"); subprocess.call(['mpc', 'pause'])
 
 def music_getstatus():
-    st = mpc.status()
+    global st
     if "state" in st:
         if st['state'] == "pause": return "|"
         if st['state'] == 'play': return ">"
@@ -90,13 +88,13 @@ def make_song_text():
 
 class Butler(threading.Thread):
     def run(self):
-        global song
+        global song, st
         btl = mpd.MPDClient()
         btl.connect("127.0.0.1", 6600)
-        song = btl.currentsong()
         while True:
-            btl.idle()
+            st = btl.status()
             song = btl.currentsong()
+            btl.idle()
 
 class Unqueuer(threading.Thread):
     def __init__(self):
@@ -122,7 +120,7 @@ class Unqueuer(threading.Thread):
                     lcd.setPosition(o[1], o[2])
                     lcd.writeChar(o[3])
             else:
-                time.sleep(0.2)
+                time.sleep(0.1)
 
 t = Unqueuer()
 t.daemon = True
@@ -141,4 +139,4 @@ while True:
         out = out.center(len(out)+32)
         for i in range(0, len(out)-15):
             baqueuestring(3+i, 2, 0, out[i:i+16], (incer,incr,), dontcheck=False)
-    time.sleep(0.3)
+    time.sleep(0.1)
