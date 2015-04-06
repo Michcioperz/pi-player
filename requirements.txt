@@ -1,4 +1,3 @@
-smbus
 python-mpd2
 RPi.GPIO
 Unidecode

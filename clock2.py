@@ -16,12 +16,9 @@ st = {}
 oldsong = None
 incr = 0
 
-def incer(i):
-    global incr
-    return incr <= i
+def incer(i): return incr <= i
 
 def notifie(text=""):
-    global t
     t.enqueuestring(0.5, 2, 0, t.scr[2])
     t.baqueuestring(0, 2, 0, text.center(16))
 
@@ -31,7 +28,6 @@ def music_play(data): notifie(" "*9+"PLAY"); subprocess.call(['mpc', 'play'])
 def music_pause(data): notifie(" "*9+"PAUS"); subprocess.call(['mpc', 'pause'])
 
 def music_getstatus():
-    global st
     if "state" in st:
         if st['state'] == "pause": return "|"
         if st['state'] == 'play': return ">"
@@ -55,7 +51,6 @@ def timecheck():
             t.enqueuechar(0, 1, i, naotsugu[i], dontcheck=False)
 
 def make_song_text():
-    global song
     return unidecode(("%s - %s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"), song.get('album',"no album"))))
 
 class Butler(threading.Thread):
