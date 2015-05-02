@@ -5,8 +5,6 @@ import datetime
 import atexit
 import RPi.GPIO as GPIO
 import mpd
-import math
-import re
 import subprocess
 import time
 import threading
@@ -62,6 +60,7 @@ class Butler(threading.Thread):
             st = btl.status()
             song = btl.currentsong()
             btl.idle()
+            print("idlend")
 
 t = Screener()
 t.daemon = True
