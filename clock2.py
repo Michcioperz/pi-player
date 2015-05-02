@@ -49,7 +49,10 @@ def timecheck():
             t.enqueuechar(0, 1, i, naotsugu[i], dontcheck=False)
 
 def make_song_text():
-    return unidecode(("%s - %s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"), song.get('album',"no album"))))
+    if song.get('album', song.get('title','no title')).lower() == song.get('title','no title').lower():
+        return unidecode(("%s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"))))
+    else:
+        return unidecode(("%s - %s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"), song.get('album',"no album"))))
 
 class Butler(threading.Thread):
     def run(self):
@@ -78,10 +81,10 @@ while True:
     if song != oldsong:
         incr = incr + 1
         oldsong = song
-        out = make_song_text()
-        for i in range(len(out.split(" ")+[" "])):
+        out = [" "]+make_song_text().split()+[" "]
+        for i in range(len(out)):
             if i % 2:
-                t.baqueuestring(3+i, 2, 0, (out.split()+[" "])[i].center(16), (incer,incr,), dontcheck=1)
+                t.baqueuestring(3+i, 2, 0, out[i].center(16), (incer,incr,), dontcheck=1)
             else:
-                t.enqueuestring(3+i, 2, 0, (out.split()+[" "])[i].center(16), (incer,incr,), dontcheck=1)
+                t.enqueuestring(3+i, 2, 0, out[i].center(16), (incer,incr,), dontcheck=1)
     time.sleep(0.1)
