@@ -28,6 +28,7 @@ class Screener(threading.Thread):
         while True:
             if not self.queue.empty():
                 o = self.queue.get()
+                if o[1] not in [1,2] or o[2] not in range(16): continue
                 if o[4] is not None:
                     if o[4][0](o[4][1]):
                         if o[5] or self.checkdiff(o[1], o[2], o[3]):

@@ -80,7 +80,9 @@ while True:
         incr = incr + 1
         oldsong = song
         out = make_song_text()
-        out = out.center(len(out)+32)
-        for i in range(0, len(out)-15):
-            t.baqueuestring(3+i, 2, 0, out[i:i+16], (incer,incr,), dontcheck=False)
+        for i in range(len(out.split(" ")+[" "])):
+            if i % 2:
+                t.baqueuestring(3+i, 2, 0, (out.split()+[" "])[i].center(16), (incer,incr,), dontcheck=1)
+            else:
+                t.enqueuestring(3+i, 2, 0, (out.split()+[" "])[i].center(16), (incer,incr,), dontcheck=1)
     time.sleep(0.1)
