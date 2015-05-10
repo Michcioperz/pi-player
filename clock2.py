@@ -20,11 +20,9 @@ def incer(i): return incr <= i
 def notifie(text=""):
     t.enqueuestring(0.5, 2, 0, t.scr[2])
     t.baqueuestring(0, 2, 0, text.center(16))
+    return True
 
-def music_prev(*args, **kwargs): notifie(" "*9+"PREV"); subprocess.call(['mpc', 'prev'])
-def music_next(*args, **kwargs): notifie(" "*9+"NEXT"); subprocess.call(['mpc', 'next'])
-def music_play(*args, **kwargs): notifie(" "*9+"PLAY"); subprocess.call(['mpc', 'play'])
-def music_pause(*args, **kwargs): notifie(" "*9+"PAUS"); subprocess.call(['mpc', 'pause'])
+pins = {16: (lambda data: notifie(" "*9+"PREV") and subprocess.call(['mpc', 'prev'])), 18: (lambda data: notifie(" "*9+"NEXT") and subprocess.call(['mpc', 'next'])), 22: (lambda data: notifie(" "*9+"PLAY") and subprocess.call(['mpc', 'play'])), 12: (lambda data: notifie(" "*9+"PAUS") and subprocess.call(['mpc', 'pause']))}
 
 def music_getstatus():
     if "state" in st:
@@ -34,7 +32,6 @@ def music_getstatus():
     return "?"
 
 GPIO.setmode(GPIO.BOARD)
-pins = {16:music_prev, 12:music_pause, 22:music_play, 18:music_next}
 for pin in pins:
     GPIO.setup(pin, GPIO.IN, GPIO.PUD_UP)
     GPIO.add_event_detect(pin, GPIO.RISING, pins[pin])
