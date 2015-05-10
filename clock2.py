@@ -21,10 +21,10 @@ def notifie(text=""):
     t.enqueuestring(0.5, 2, 0, t.scr[2])
     t.baqueuestring(0, 2, 0, text.center(16))
 
-def music_prev(data): notifie(" "*9+"PREV"); subprocess.call(['mpc', 'prev'])
-def music_next(data): notifie(" "*9+"NEXT"); subprocess.call(['mpc', 'next'])
-def music_play(data): notifie(" "*9+"PLAY"); subprocess.call(['mpc', 'play'])
-def music_pause(data): notifie(" "*9+"PAUS"); subprocess.call(['mpc', 'pause'])
+def music_prev(*args, **kwargs): notifie(" "*9+"PREV"); subprocess.call(['mpc', 'prev'])
+def music_next(*args, **kwargs): notifie(" "*9+"NEXT"); subprocess.call(['mpc', 'next'])
+def music_play(*args, **kwargs): notifie(" "*9+"PLAY"); subprocess.call(['mpc', 'play'])
+def music_pause(*args, **kwargs): notifie(" "*9+"PAUS"); subprocess.call(['mpc', 'pause'])
 
 def music_getstatus():
     if "state" in st:
