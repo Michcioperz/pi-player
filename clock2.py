@@ -8,6 +8,7 @@ import mpd
 import subprocess
 import time
 import threading
+import re
 
 song = None
 st = {}
@@ -49,10 +50,10 @@ def timecheck():
             t.enqueuechar(0, 1, i, naotsugu[i], dontcheck=False)
 
 def make_song_text():
-    if song.get('album', song.get('title','no title')).lower() == song.get('title','no title').lower():
-        return unidecode(("%s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"))))
+    if song.get('album', song.get('title','no title')).lower().startswith(song.get('title','no title').lower()):
+        return [unidecode(song.get('artist', "no artist")), unidecode(song.get('title',"no title"))]
     else:
-        return unidecode(("%s - %s - %s" % (song.get('artist', "no artist"), song.get('title',"no title"), song.get('album',"no album"))))
+        return [unidecode(song.get('artist', "no artist")), unidecode(song.get('title',"no title")), unidecode(song.get('album',"no album"))]
 
 class Butler(threading.Thread):
     def run(self):
@@ -76,12 +77,35 @@ u.start()
 timecheck()
 while not t.queue.empty(): pass
 
+def calm(): time.sleep(0.2)
+
+def megasplit(text):
+    targ = []
+    sp = text.split()
+    i = 0
+    while i < len(sp)-1:
+        if len(sp[i]) < 14 and (len(sp[i])+len(sp[i+1])+1) < 16:
+            sp[i] += " " + sp.pop(i+1)
+        else:
+            i += 1
+    for w in sp:
+        if len(w) <= 16:
+            targ.append(w)
+        else:
+            spl = list(filter(None, re.findall(".{,14}", w)))
+            targ.append(spl[0]+"-")
+            targ.extend(["-"+x+"-" for x in spl[1:-1]])
+            targ.append("-"+spl[-1])
+    return targ
+
 while True:
     timecheck()
     if song != oldsong:
         incr = incr + 1
         oldsong = song
-        out = [" "]+make_song_text().split()+[" "]
+        out = [""]
+        for i in make_song_text():
+            out.extend(megasplit(i)+[""])
         for i in range(len(out)):
             if i % 2:
                 t.baqueuestring(3+i, 2, 0, out[i].center(16), (incer,incr,), dontcheck=1)

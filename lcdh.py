@@ -35,6 +35,7 @@ class Screener(threading.Thread):
                             self.scr[o[1]][o[2]] = o[3]
                             self.lcd.setPosition(o[1], o[2])
                             self.lcd.writeChar(o[3])
+                            if o[0] > 2: time.sleep((abs(o[2]-(7 if o[2]>7 else 8))^2)*0.01)
                         else:
                             pass #print 'already there %s' % repr(o)
                     else:
