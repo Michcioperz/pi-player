@@ -66,6 +66,7 @@ class Butler(threading.Thread):
 t = Screener()
 t.daemon = True
 t.start()
+t.lcd.command(t.lcd.CMD_Display_Control | t.lcd.OPT_Enable_Display)
 
 u = Butler()
 u.daemon = True
@@ -106,6 +107,8 @@ while True:
         for i in range(len(out)):
             if i % 2:
                 t.baqueuestring(3+i, 2, 0, out[i].center(16), (incer,incr,), dontcheck=1)
+                if out[i].center(16) != " "*16: t.baqueuestring(3.5+i, 2, 0, " "*16, (incer, incr), dontcheck=1)
             else:
                 t.enqueuestring(3+i, 2, 0, out[i].center(16), (incer,incr,), dontcheck=1)
+                if out[i].center(16) != " "*16: t.enqueuestring(3.5+i, 2, 0, " "*16, (incer, incr), dontcheck=1)
     time.sleep(0.1)
